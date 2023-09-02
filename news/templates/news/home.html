@@ -1,0 +1,34 @@
+{% extends "news/index_layout.html" %}
+{% block title %}
+  BeInformed - Home
+{% endblock %}
+{% block heading %}
+<h1 class="my-4">Top Headlines
+  <small>this hour...</small>
+</h1>
+{% endblock %}
+{% block content%}
+{% for article in articles%}
+<div class="card mb-4">
+  <img class="card-img-top" src="{{article.urlToImage}}" alt="Card image cap">
+  <div class="card-body">
+    <h4 class="card-title">{{article.title}}</h2>
+    <p class="card-text">{{article.description}}</p>
+    <a href="{{article.url}}" class="btn btn-primary" target="_blank">Read More &rarr;</a>
+  </div>
+  <div class="card-footer text-muted">Author:
+    {{article.author}}, published by
+    <strong>{{article.source.name}}</strong>
+  </div>
+</div>
+  {% empty %}
+    <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Oops! There seems to be some problem on our side</h3>
+      <p class="card-text">Error code: {{code}}
+        <div>Error Message: {{message}}</div></p>
+    </div>
+  </div>
+{% endfor %}
+
+{% endblock %}

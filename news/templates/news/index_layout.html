@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>{%block title%} {% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+
+  <link href="{% static 'news/css/index.css' %}" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">BeInformed</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          {% if user.is_authenticated %}
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Hello {{user.username}}!</a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home'%}">Home
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#search">Search</a>
+          </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'feed' %}">My Feed</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register'%}">Register</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <div class="row">
+
+
+      <div class="col-md-8">
+
+        {%block heading%}
+        {% endblock %}
+
+        {% block content%}
+        {% endblock %}
+
+        <ul class="pagination justify-content-center mb-4">
+
+        {% if articles.has_previous %}
+
+        <li class="page-item"><a  class="page-link" href="?page={{ articles.previous_page_number }}">&laquo;</a></li>
+        {% else %}
+        <li class="page-item disabled"><a class="page-link">&laquo;</a></li>
+        {% endif %}
+        {% for i in articles.paginator.page_range %}
+          {% if articles.number == i %}
+            <li class="active page-item"><a class="page-link">{{ i }}</a></li>
+          {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if articles.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ articles.next_page_number }}">&raquo;</a></li>
+        {% else %}
+          <li class="disabled page-item"><a class="page-link">&raquo;</a></li>
+        {% endif %}
+      </ul>
+      </div>
+
+      <div class="col-md-4">
+
+        <div class="card my-4">
+          <h5 class="card-header" id="search">Search</h5>
+          <div class="card-body">
+            <form action="{% url 'search' %}" method="post">
+              {% csrf_token %}
+            <div class="input-group">
+
+              <input type="text" class="form-control"  id="q"  autocomplete="off" placeholder="Search for..." required name="q">
+              <span class="input-group-append">
+                <button  id="go" class="btn btn-secondary" type="submit">Go!</button>
+              </span>
+            </div>
+            <br>
+            <a id="more_fil" href="#search"> More Filters <span id="spl">&darr;</span></a>
+            <div id="mrefil">
+            <div class="input-group">
+                <label  class="col-sm-3 input-group-prepend"  for="frmdt">From:</label>
+              <input type="date" class="form-control" id="frmdt" name="frmdt">
+            </div><br>
+            <div class="input-group">
+              <label  class="col-sm-3 input-group-prepend"  for="todt">To:</label>
+            <input type="date" class="form-control" id="todt" name="todt">
+          </div>
+          <br>
+          <div class="input-group">
+              <label  class="col-auto input-group-prepend"  for="src">Sources:</label>
+            <input type="text" autocomplete="off" class="form-control"  id="src" name="src" aria-describedby="srchelp">
+            <small  id="srchelp" class="form-text text-muted col-auto">A comma-separated string of identifiers for the news sources or blogs you want headlines from. <strong>Ex: bbc-news, the-verge</strong></small>
+          </div><br>
+          <div class="input-group">
+            <label  class="col-auto input-group-prepend"  for="dom">Domains:</label>
+          <input type="text" class="form-control" autocomplete="off" id="dom" name="dom" aria-describedby="domhelp">
+            <small  id="domhelp" class="form-text text-muted col-auto">A comma-seperated string of domains to restrict the search to.<strong> Ex: bbc.co.uk, techcrunch.com, engadget.com</strong></small>
+        </div>
+        </div>
+      </form>
+        </div>
+      </div>
+
+      <div class="card my-4">
+        <h5 class="card-header">Search top headlines for different categories across countries</h5>
+        <div class="card-body">
+          <form action="{% url 'searchtop' %}" method="post">
+            {% csrf_token %}
+          <div class="input-group">
+            <input type="text" class="form-control" autocomplete="off" id="q-top"  placeholder="Search for..."  name="q-top">
+            <span class="input-group-append">
+              <button  id="q-go" class="btn btn-secondary" type="submit">Go!</button>
+            </span>
+          </div><br>
+          <div class="input-group">
+            <label class="col-sm-4" for="categories">Category:</label>
+              <select class="form-control" id="categories" name="category">
+                <option selected value="">Choose...</option>
+                  <option value="business">Business</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="general">General</option>
+                  <option value="health">Health</option>
+                  <option value="science">Science</option>
+                  <option value="sports">Sports</option>
+                  <option value="technology">Technology</option>
+              </select>
+          </div><br>
+          <div class="input-group">
+            <label class="col-sm-4" for="countries">Country:</label>
+              <select class="form-control" id="countries" name="country">
+                <option selected value="">Choose...</option>
+                  <option value="ar">Argentina</option>
+                  <option value="au">Australia</option>
+                  <option value="at">Austria</option>
+                  <option value="be">Belgium</option>
+                  <option value="br">Brazil</option>
+                  <option value="bg">Bulgaria</option>
+                  <option value="ca">Canada</option>
+                  <option value="cn">China</option>
+                  <option value="co">Colombia</option>
+                  <option value="cu">Cuba</option>
+                  <option value="cz">Czech Republic</option>
+                  <option value="eg">Egypt</option>
+                  <option value="fr">France</option>
+                  <option value="de">Germany</option>
+                  <option value="gr">Greece</option>
+                  <option value="hk">Hong Kong</option>
+                  <option value="hu">Hungary</option>
+                  <option value="in">India</option>
+                  <option value="id">Indonesia</option>
+                  <option value="ie">Ireland</option>
+                  <option value="il">Israel</option>
+                  <option value="it">Italy</option>
+                  <option value="jp">Japan</option>
+                  <option value="lv">Latvia</option>
+                  <option value="lt">Lithuania</option>
+                  <option value="my">Malaysia</option>
+                  <option value="mx">Mexico</option>
+                  <option value="ma">Morocco</option>
+                  <option value="nl">Netherlands</option>
+                  <option value="nz">New Zealand</option>
+                  <option value="ng">Nigeria</option>
+                  <option value="no">Norway</option>
+                  <option value="ph">Philippines</option>
+                  <option value="pl">Poland</option>
+                  <option value="pt">Portugal</option>
+                  <option value="ro">Romania</option>
+                  <option value="ru">Russia</option>
+                  <option value="sa">Saudi Arabia</option>
+                  <option value="rs">Serbia</option>
+                  <option value="sg">Singapore</option>
+                  <option value="sk">Slovakia</option>
+                  <option value="si">Slovenia</option>
+                  <option value="za">South Africa</option>
+                  <option value="kr">South Korea</option>
+                  <option value="se">Sweden</option>
+                  <option value="ch">Switzerland</option>
+                  <option value="tw">Taiwan</option>
+                  <option value="th">Thailand</option>
+                  <option value="tr">Turkey</option>
+                  <option value="ae">UAE</option>
+                  <option value="ua">Ukraine</option>
+                  <option value="gb">United Kingdom</option>
+                  <option value="us">United States</option>
+                  <option value="ve">Venezuela</option>
+
+              </select>
+          </div>
+        </form>
+        </div>
+      </div>
+
+        <div class="card my-4">
+          <h5 class="card-header">Categories</h5>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <ul class="list-unstyled mb-0">
+                  <li class="row">
+                    <div class="col-lg-9 col"><a style="font-size:15px;"  href="{% url 'category' 'business' %}">Business</a></div>
+                    {%if user.is_authenticated %}
+                      {% if "Business" in stuff %}
+                        <div class="col-lg-3 col-3"><button data-cat="business"class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                      {% else %}
+                        <div class="col-lg-3 col-3"><button data-cat="business"class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                      {% endif %}
+                    {% endif %}
+                  </li><hr>
+                  <li class="row">
+                    <div class="col-lg-9 col"><a style="font-size:15px;"  href="{% url 'category' 'entertainment' %}">Entertainment</a></div>
+                    {%if user.is_authenticated %}
+                    {% if "Entertainment" in stuff %}
+                      <div class="col-lg-3 col-3"><button data-cat="entertainment" class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                    {% else %}
+                      <div class="col-lg-3 col-3"><button data-cat="entertainment" class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                    {% endif %}
+                  {% endif %}
+                  </li><hr>
+                  <li class="row">
+                    <div class="col-lg-9 col"><a  style="font-size:15px;"  href="{% url 'category' 'health' %}">Health</a></div>
+                    {%if user.is_authenticated %}
+                    {% if "Health" in stuff %}
+                      <div class="col-lg-3 col-3"><button data-cat="health"class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                    {% else %}
+                      <div class="col-lg-3 col-3"><button data-cat="health"class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                    {% endif %}
+                  {% endif %}
+                  </li><hr>
+                </ul>
+              </div>
+              <div class="col-lg-6">
+                <ul class="list-unstyled mb-0">
+
+                  <li class="row">
+                    <div class="col-lg-8 col"><a style="font-size:15px;" href="{% url 'category' 'science' %}">Science</a></div>
+                    {%if user.is_authenticated %}
+                    {% if "Science" in stuff %}
+                      <div class="col-lg-3 col-3"><button data-cat="science"class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                    {% else %}
+                      <div class="col-lg-3 col-3"><button data-cat="science"class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                    {% endif %}
+                  {% endif %}
+                  </li><hr>
+                  <li class="row">
+                    <div class="col-lg-8 col"><a  style="font-size:15px;"  href="{% url 'category' 'sports' %}">Sports</a></div>
+                    {%if user.is_authenticated %}
+                    {% if "Sports" in stuff %}
+                      <div class="col-lg-3 col-3"><button data-cat="sports"class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                    {% else %}
+                      <div class="col-lg-3 col-3"><button data-cat="sports"class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                    {% endif %}
+                  {% endif %}
+                  </li><hr>
+                  <li class="row">
+                    <div class="col-lg-8 col"><a style="font-size:15px;"  href="{% url 'category' 'technology' %}">Technology</a></div>
+                    {%if user.is_authenticated %}
+                    {% if "Technology" in stuff %}
+                      <div class="col-lg-3 col-3"><button data-cat="technology"class="cat btn btn-outline-danger rounded-circle btn-sm">&minus;</button></div>
+                    {% else %}
+                      <div class="col-lg-3 col-3"><button data-cat="technology"class="cat btn btn-outline-success rounded-circle btn-sm">&plus;</button></div>
+                    {% endif %}
+                  {% endif %}
+                  </li><hr>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">Powered by <a href="https://newsapi.org" target="_blank">News API</a></p>
+    </div>
+
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+  <script src="{% static 'news/js/index.js'%}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,22 @@
+{% extends 'news/layout.html'%}
+{%block title%}
+Login
+{% endblock %}
+{%block form%}
+              <h3 class="login-heading mb-4">Welcome back!</h3>
+              <form action="{% url 'login'%}" method="post">
+                {% csrf_token%}
+                <div class="form-label-group">
+                  <input type="text" id="inputUsername" class="form-control" placeholder="Username" name="username" required autofocus>
+                  <label for="inputUsername">Username</label>
+                </div>
+
+                <div class="form-label-group">
+                  <input type="password" id="inputPassword" class="form-control" name="password" placeholder="Password" required>
+                  <label for="inputPassword">Password</label>
+                </div>
+
+                <button class="btn btn-lg btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" type="submit">Sign in</button>
+
+              </form>
+            {% endblock %}

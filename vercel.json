@@ -1,0 +1,14 @@
+{
+    "builds": [
+        {
+            "src": "capstone/wsgi.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "capstone/wsgi.py"
+        }
+    ]
+}
