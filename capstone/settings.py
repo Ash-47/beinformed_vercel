@@ -95,8 +95,8 @@ WSGI_APPLICATION = "capstone.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "URL": os.getenv("POSTGRES_URL"),
-        "NAME": os.getenv("PGNAME"),
+        # "URL": os.getenv("POSTGRES_URL"),
+        "NAME": os.getenv("PGDATABASE"),
         "USER": os.getenv("PGUSER"),
         "PASSWORD": os.getenv("PGPASSWORD"),
         "HOST": os.getenv("PGHOST"),
@@ -144,7 +144,10 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 # The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+# For vercel to store collectsatic result
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles_build", "static")
 
 # Heroku: Update database configuration from $DATABASE_URL.
 
