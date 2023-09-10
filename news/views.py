@@ -9,6 +9,8 @@ from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
+
 
 # Create your views here.
 testjson = []
@@ -72,39 +74,40 @@ def register(request):
         return render(request, "news/register.html")
 
 
+@cache_page(1800)
 def home(request):
-    global flag
-    global testjson
+    # global flag
+    # global testjson
     # print(flag)
     # print("test message")
     if request.user.is_authenticated:
         stuff = [cat.category for cat in request.user.following.all()]
     else:
         stuff = []
-    print(request.session.get("flag"))
-    if request.session.get("flag", 0) < 1:
-        # print(settings.API_KEY)
-        response = requests.get(
-            f"https://newsapi.org/v2/top-headlines?country=in&apiKey={settings.API_KEY}"
+    # print(request.session.get("flag"))
+    # if request.session.get("flag", 0) < 1:
+    #     # print(settings.API_KEY)
+    response = requests.get(
+        f"https://newsapi.org/v2/top-headlines?country=in&apiKey={settings.API_KEY}"
+    )
+    print(response.status_code)
+    request.session["flag"] = 1
+    if response.json()["status"] != "ok":
+        return render(
+            request,
+            "news/home.html",
+            {
+                "articles": None,
+                "stuff": stuff,
+                "code": response.json()["code"],
+                "message": response.json()["message"],
+            },
         )
-        print(response.status_code)
-        request.session["flag"] = 1
-        if response.json()["status"] != "ok":
-            return render(
-                request,
-                "news/home.html",
-                {
-                    "articles": None,
-                    "stuff": stuff,
-                    "code": response.json()["code"],
-                    "message": response.json()["message"],
-                },
-            )
-        else:
-            flag += 1
-            # print("inside else")
-            testjson = response.json()["articles"]
-    paginator = Paginator(testjson, 4)
+        # else:
+        #     flag += 1
+        #     # print("inside else")
+        #     testjson = response.json()["articles"]
+    paginator = Paginator(response.json()["articles"], 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     # request.session.set_expiry(300)
