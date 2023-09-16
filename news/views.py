@@ -74,7 +74,7 @@ def register(request):
         return render(request, "news/register.html")
 
 
-@cache_page(1800)
+@cache_page(1)
 def home(request):
     # global flag
     # global testjson
@@ -91,13 +91,15 @@ def home(request):
         f"https://newsapi.org/v2/top-headlines?country=in&apiKey={settings.API_KEY}"
     )
     print(response.status_code)
-    request.session["flag"] = 1
+    # request.session["flag"] = 1
     if response.json()["status"] != "ok":
+        # print("errored")
         return render(
             request,
             "news/home.html",
             {
-                "articles": None,
+                "page_obj": None,
+                "paginator": None,
                 "stuff": stuff,
                 "code": response.json()["code"],
                 "message": response.json()["message"],
@@ -109,11 +111,18 @@ def home(request):
         #     testjson = response.json()["articles"]
     paginator = Paginator(response.json()["articles"], 4)
     page_number = request.GET.get("page")
+    print(page_number)
     page_obj = paginator.get_page(page_number)
+    # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
+    # print(list(page_obj.adjusted_elided_pages))
     # request.session.set_expiry(300)
     # print(testjson)
     #  print(page_obj)
-    return render(request, "news/home.html", {"articles": page_obj, "stuff": stuff})
+    return render(
+        request,
+        "news/home.html",
+        {"page_obj": page_obj, "paginator": paginator, "stuff": stuff},
+    )
 
 
 def housekeeping(arts, name):
@@ -163,20 +172,31 @@ def search(request):
         paginator = Paginator(response.json()["articles"], 4)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
+        # print(page_number)
+        # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
+        # print(list(page_obj.adjusted_elided_pages))
         return render(
             request,
             "news/search.html",
-            {"articles": page_obj, "name": request.POST.get("q"), "stuff": stuff},
+            {
+                "page_obj": page_obj,
+                "paginator": paginator,
+                "name": request.POST.get("q"),
+                "stuff": stuff,
+            },
         )
 
     else:
         paginator = Paginator(searcharts, 4)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
+        # print(page_number)
+        # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
+        # print(list(page_obj.adjusted_elided_pages))
         return render(
             request,
             "news/search.html",
-            {"articles": page_obj, "name": q, "stuff": stuff},
+            {"page_obj": page_obj, "paginator": paginator, "name": q, "stuff": stuff},
         )
 
 
@@ -198,7 +218,8 @@ def searchtop(request):
                 request,
                 "news/search.html",
                 {
-                    "articles": None,
+                    "paginator": None,
+                    "page_obj": None,
                     "name": request.POST.get("q-top"),
                     "stuff": stuff,
                     "code": response.json()["code"],
@@ -210,19 +231,26 @@ def searchtop(request):
         paginator = Paginator(response.json()["articles"], 4)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
+        # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
         return render(
             request,
             "news/search.html",
-            {"articles": page_obj, "name": request.POST.get("q-top"), "stuff": stuff},
+            {
+                "page_obj": page_obj,
+                "paginator": paginator,
+                "name": request.POST.get("q-top"),
+                "stuff": stuff,
+            },
         )
     else:
         paginator = Paginator(searcharts, 4)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
+        # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
         return render(
             request,
             "news/search.html",
-            {"articles": page_obj, "name": q, "stuff": stuff},
+            {"page_obj": page_obj, "paginator": paginator, "name": q, "stuff": stuff},
         )
 
 
@@ -239,7 +267,8 @@ def category(request, value):
             request,
             "news/category.html",
             {
-                "articles": None,
+                "page_obj": None,
+                "paginator": None,
                 "stuff": stuff,
                 "code": response.json()["code"],
                 "message": response.json()["message"],
@@ -250,10 +279,16 @@ def category(request, value):
     paginator = Paginator(response.json()["articles"], 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+    # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
     return render(
         request,
         "news/category.html",
-        {"articles": page_obj, "name": value.capitalize(), "stuff": stuff},
+        {
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "name": value.capitalize(),
+            "stuff": stuff,
+        },
     )
 
 
@@ -294,7 +329,12 @@ def feed(request):
     paginator = Paginator(articles, 4)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+    # page_obj.adjusted_elided_pages = paginator.get_elided_page_range(page_number)
 
     stuff = [cat.category for cat in request.user.following.all()]
 
-    return render(request, "news/feed.html", {"articles": page_obj, "stuff": stuff})
+    return render(
+        request,
+        "news/feed.html",
+        {"page_obj": page_obj, "paginator": paginator, "stuff": stuff},
+    )
