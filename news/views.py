@@ -15,7 +15,6 @@ from django.views.decorators.cache import cache_page
 # Create your views here.
 testjson = []
 searcharts = []
-flag = 0
 q = None
 
 
@@ -74,7 +73,7 @@ def register(request):
         return render(request, "news/register.html")
 
 
-@cache_page(1)
+@cache_page(1800)
 def home(request):
     # global flag
     # global testjson
